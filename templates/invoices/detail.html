@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="level">
+    <div class="level-left">
+        <h1 class="title">Invoice {{ invoice.invoice_number }}</h1>
+    </div>
+    <div class="level-right">
+        <a class="button is-link" href="{% url 'invoice_print' invoice.pk %}" target="_blank">Print View</a>
+    </div>
+</div>
+<div class="box">
+    <div class="columns">
+        <div class="column">
+            <p><strong>Client:</strong> {{ invoice.subscription.client.company_name }}</p>
+            <p><strong>Plan:</strong> {{ invoice.subscription.plan.name }}</p>
+            <p><strong>Billing Cycle:</strong> {{ invoice.subscription.get_billing_cycle_display }}</p>
+        </div>
+        <div class="column">
+            <p><strong>Amount:</strong> {{ invoice.amount }}</p>
+            <p><strong>Issue Date:</strong> {{ invoice.issue_date }}</p>
+            <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
+        </div>
+        <div class="column">
+            <p><strong>Status:</strong> {{ invoice.get_status_display }}</p>
+            {% if invoice.last_reminder_sent_at %}
+                <p><strong>Last Reminder:</strong> {{ invoice.last_reminder_sent_at }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% if invoice.status != 'paid' %}
+<form method="post" action="{% url 'invoice_mark_paid' invoice.pk %}">
+    {% csrf_token %}
+    <button class="button is-success">Mark as Paid</button>
+</form>
+{% endif %}
+{% endblock %}

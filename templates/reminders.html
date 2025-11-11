@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="title">Payment Reminders</h1>
+<div class="columns">
+    <div class="column">
+        <div class="box">
+            <h2 class="subtitle">Upcoming Payments (next 7 days)</h2>
+            <table class="table is-fullwidth is-striped">
+                <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Client</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for invoice in upcoming %}
+                    <tr>
+                        <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td>
+                        <td>{{ invoice.subscription.client.company_name }}</td>
+                        <td>{{ invoice.amount }}</td>
+                        <td>{{ invoice.due_date }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4">No upcoming reminders.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="column">
+        <div class="box">
+            <h2 class="subtitle">Overdue Payments</h2>
+            <table class="table is-fullwidth is-striped">
+                <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Client</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Days Overdue</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for invoice in overdue %}
+                    <tr class="overdue">
+                        <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td>
+                        <td>{{ invoice.subscription.client.company_name }}</td>
+                        <td>{{ invoice.amount }}</td>
+                        <td>{{ invoice.due_date }}</td>
+                        <td>{{ invoice.days_overdue }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">No overdue invoices.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

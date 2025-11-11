@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Subscription Manager MVP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        body { background-color: #f7f7f7; }
+        .navbar { margin-bottom: 1.5rem; }
+        .section { padding-top: 2rem; }
+        table.table tbody tr.overdue { background-color: #fff5f5; }
+        table.table tbody tr.expiring { background-color: #fffaf0; }
+    </style>
+</head>
+<body>
+<nav class="navbar is-dark" role="navigation">
+    <div class="navbar-brand">
+        <a class="navbar-item" href="{%- url 'dashboard' -%}">
+            Subscription Manager
+        </a>
+    </div>
+    <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item" href="{%- url 'client_list' -%}">Clients</a>
+            <a class="navbar-item" href="{%- url 'subscription_list' -%}">Subscriptions</a>
+            <a class="navbar-item" href="{%- url 'invoice_list' -%}">Invoices</a>
+            <a class="navbar-item" href="{%- url 'payment_list' -%}">Payments</a>
+            <a class="navbar-item" href="{%- url 'reminders' -%}">Reminders</a>
+        </div>
+        <div class="navbar-end">
+            <div class="navbar-item">
+                <form method="post" action="{%- url 'logout' -%}">
+                    {% csrf_token %}
+                    <button class="button is-light" type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="section">
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="notification is-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+</body>
+</html>

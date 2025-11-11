@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ invoice.invoice_number }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+        header { border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 10px; }
+        .invoice-details, .client-details { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
+        .totals { text-align: right; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Invoice {{ invoice.invoice_number }}</h1>
+    <p><strong>Our Company</strong><br>Ethiopia, Addis Ababa<br>support@example.com</p>
+</header>
+<section class="client-details">
+    <h2>Bill To</h2>
+    <p>
+        {{ invoice.subscription.client.company_name }}<br>
+        Attn: {{ invoice.subscription.client.contact_person }}<br>
+        {{ invoice.subscription.client.email }}<br>
+        {{ invoice.subscription.client.phone }}
+    </p>
+</section>
+<section class="invoice-details">
+    <p><strong>Issue Date:</strong> {{ invoice.issue_date }}<br>
+       <strong>Due Date:</strong> {{ invoice.due_date }}<br>
+       <strong>Payment Method:</strong> Bank Transfer or Cheque</p>
+</section>
+<table>
+    <thead>
+    <tr>
+        <th>Description</th>
+        <th>Billing Cycle</th>
+        <th>Amount</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{ invoice.subscription.plan.name }} subscription</td>
+        <td>{{ invoice.subscription.get_billing_cycle_display }}</td>
+        <td>{{ invoice.amount }}</td>
+    </tr>
+    </tbody>
+</table>
+<div class="totals">
+    <p><strong>Total Due:</strong> {{ invoice.amount }}</p>
+</div>
+<section>
+    <p><strong>Payment Instructions:</strong> Please settle the invoice within the due date via bank transfer or cheque. Include the invoice number in the payment reference.</p>
+</section>
+</body>
+</html>
