@@ -26,4 +26,8 @@ urlpatterns = [
     path("invoices/<int:pk>/print/", views.invoice_print, name="invoice_print"),
     path("invoices/<int:pk>/mark-paid/", views.invoice_mark_paid, name="invoice_mark_paid"),
     path("reminders/", views.reminders, name="reminders"),
+    path("plans/", views.plan_list, name="plan_list"),
+    path("plans/new/", views.plan_create, name="plan_create"),
+    path("plans/<int:pk>/", views.plan_detail, name="plan_detail"),
+    path("plans/<int:pk>/edit/", views.plan_edit, name="plan_edit"),
 ]

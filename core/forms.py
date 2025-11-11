@@ -4,7 +4,19 @@ from datetime import timedelta
 
 from django import forms
 
-from .models import Client, Invoice, Payment, Subscription
+from .models import Client, Invoice, Payment, Subscription, SubscriptionPlan
+
+
+class SubscriptionPlanForm(forms.ModelForm):
+    class Meta:
+        model = SubscriptionPlan
+        fields = ["name", "price_monthly", "price_annual", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "input"}),
+            "price_monthly": forms.NumberInput(attrs={"class": "input", "step": "0.01"}),
+            "price_annual": forms.NumberInput(attrs={"class": "input", "step": "0.01"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "checkbox"}),
+        }
 
 
 class ClientForm(forms.ModelForm):
@@ -37,6 +49,14 @@ class SubscriptionForm(forms.ModelForm):
             "start_date": forms.DateInput(attrs={"type": "date", "class": "input"}),
             "status": forms.Select(attrs={}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only show active plans by default, but allow all plans if editing
+        if not self.instance.pk:  # New subscription
+            self.fields["plan"].queryset = SubscriptionPlan.objects.filter(is_active=True)
+        else:  # Editing existing subscription
+            self.fields["plan"].queryset = SubscriptionPlan.objects.all()
 
     def clean(self):
         cleaned = super().clean()

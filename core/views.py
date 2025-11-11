@@ -9,8 +9,8 @@ from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import ClientForm, InvoiceForm, PaymentForm, SubscriptionForm
-from .models import Client, Invoice, Payment, Subscription, get_reminder_invoices
+from .forms import ClientForm, InvoiceForm, PaymentForm, SubscriptionForm, SubscriptionPlanForm
+from .models import Client, Invoice, Payment, Subscription, SubscriptionPlan, get_reminder_invoices
 
 
 class AdminLoginView(LoginView):
@@ -299,4 +299,53 @@ def reminders(request):
             "upcoming": upcoming.select_related("subscription__client"),
             "overdue": overdue.select_related("subscription__client"),
         },
+    )
+
+
+@login_required
+def plan_list(request):
+    plans = SubscriptionPlan.objects.all().order_by("name")
+    return render(request, "plans/list.html", {"plans": plans})
+
+
+@login_required
+def plan_create(request):
+    if request.method == "POST":
+        form = SubscriptionPlanForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Subscription plan created successfully")
+            return redirect("plan_list")
+    else:
+        form = SubscriptionPlanForm()
+    return render(request, "plans/form.html", {"form": form, "title": "New Subscription Plan"})
+
+
+@login_required
+def plan_edit(request, pk):
+    plan = get_object_or_404(SubscriptionPlan, pk=pk)
+    if request.method == "POST":
+        form = SubscriptionPlanForm(request.POST, instance=plan)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Subscription plan updated successfully")
+            return redirect("plan_detail", pk=plan.pk)
+    else:
+        form = SubscriptionPlanForm(instance=plan)
+    return render(
+        request,
+        "plans/form.html",
+        {"form": form, "title": f"Edit {plan.name}", "plan": plan},
+    )
+
+
+@login_required
+def plan_detail(request, pk):
+    plan = get_object_or_404(SubscriptionPlan, pk=pk)
+    subscriptions = Subscription.objects.filter(plan=plan).select_related("client")
+    active_count = subscriptions.filter(status=Subscription.Status.ACTIVE).count()
+    return render(
+        request,
+        "plans/detail.html",
+        {"plan": plan, "subscriptions": subscriptions, "active_count": active_count},
     )

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="level">
+    <div class="level-left">
+        <h1 class="title">{{ plan.name }}</h1>
+    </div>
+    <div class="level-right">
+        <a href="{% url 'plan_edit' plan.pk %}" class="button is-link">Edit</a>
+        <a href="{% url 'plan_list' %}" class="button">Back to Plans</a>
+    </div>
+</div>
+<div class="columns">
+    <div class="column">
+        <div class="box">
+            <h2 class="subtitle">Plan Details</h2>
+            <p><strong>Name:</strong> {{ plan.name }}</p>
+            <p><strong>Monthly Price:</strong> ${{ plan.price_monthly }}</p>
+            <p><strong>Annual Price:</strong> ${{ plan.price_annual }}</p>
+            <p><strong>Status:</strong> 
+                {% if plan.is_active %}
+                    <span class="tag is-success">Active</span>
+                {% else %}
+                    <span class="tag is-light">Inactive</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    <div class="column">
+        <div class="box">
+            <h2 class="subtitle">Statistics</h2>
+            <p><strong>Total Subscriptions:</strong> {{ subscriptions.count }}</p>
+            <p><strong>Active Subscriptions:</strong> {{ active_count }}</p>
+        </div>
+    </div>
+</div>
+<div class="box">
+    <h2 class="subtitle">Subscriptions</h2>
+    <table class="table is-fullwidth is-striped">
+        <thead>
+        <tr>
+            <th>Client</th>
+            <th>Billing Cycle</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for subscription in subscriptions %}
+            <tr>
+                <td><a href="{% url 'client_detail' subscription.client.pk %}">{{ subscription.client.company_name }}</a></td>
+                <td>{{ subscription.get_billing_cycle_display }}</td>
+                <td>{{ subscription.start_date }}</td>
+                <td>{{ subscription.end_date }}</td>
+                <td>{{ subscription.get_status_display }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">No subscriptions for this plan yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
