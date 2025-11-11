@@ -7,12 +7,12 @@
         <div class="field">
             <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
             <div class="control">
-                {% if field.field.widget.input_type == 'date' %}
-                    {{ field.as_widget(attrs={'class': 'input', 'type': 'date'}) }}
-                {% elif field.field.widget.__class__.__name__ == 'Select' %}
-                    <div class="select is-fullwidth">{{ field.as_widget }}</div>
+                {% if field.field.choices or field.field.queryset %}
+                    <div class="select is-fullwidth">
+                        {{ field }}
+                    </div>
                 {% else %}
-                    {{ field.as_widget(attrs={'class': 'input'}) }}
+                    {{ field }}
                 {% endif %}
             </div>
             {% if field.help_text %}

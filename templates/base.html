@@ -15,21 +15,21 @@
 <body>
 <nav class="navbar is-dark" role="navigation">
     <div class="navbar-brand">
-        <a class="navbar-item" href="{%- url 'dashboard' -%}">
+        <a class="navbar-item" href="{% url 'dashboard' %}">
             Subscription Manager
         </a>
     </div>
     <div class="navbar-menu">
         <div class="navbar-start">
-            <a class="navbar-item" href="{%- url 'client_list' -%}">Clients</a>
-            <a class="navbar-item" href="{%- url 'subscription_list' -%}">Subscriptions</a>
-            <a class="navbar-item" href="{%- url 'invoice_list' -%}">Invoices</a>
-            <a class="navbar-item" href="{%- url 'payment_list' -%}">Payments</a>
-            <a class="navbar-item" href="{%- url 'reminders' -%}">Reminders</a>
+            <a class="navbar-item" href="{% url 'client_list' %}">Clients</a>
+            <a class="navbar-item" href="{% url 'subscription_list' %}">Subscriptions</a>
+            <a class="navbar-item" href="{% url 'invoice_list' %}">Invoices</a>
+            <a class="navbar-item" href="{% url 'payment_list' %}">Payments</a>
+            <a class="navbar-item" href="{% url 'reminders' %}">Reminders</a>
         </div>
         <div class="navbar-end">
             <div class="navbar-item">
-                <form method="post" action="{%- url 'logout' -%}">
+                <form method="post" action="{% url 'logout' %}">
                     {% csrf_token %}
                     <button class="button is-light" type="submit">Logout</button>
                 </form>

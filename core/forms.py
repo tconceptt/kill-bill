@@ -17,6 +17,13 @@ class ClientForm(forms.ModelForm):
             "phone",
             "status",
         ]
+        widgets = {
+            "company_name": forms.TextInput(attrs={"class": "input"}),
+            "contact_person": forms.TextInput(attrs={"class": "input"}),
+            "email": forms.EmailInput(attrs={"class": "input"}),
+            "phone": forms.TextInput(attrs={"class": "input"}),
+            "status": forms.Select(attrs={}),
+        }
 
 
 class SubscriptionForm(forms.ModelForm):
@@ -24,7 +31,11 @@ class SubscriptionForm(forms.ModelForm):
         model = Subscription
         fields = ["client", "plan", "billing_cycle", "start_date", "status"]
         widgets = {
-            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "client": forms.Select(attrs={}),
+            "plan": forms.Select(attrs={}),
+            "billing_cycle": forms.Select(attrs={}),
+            "start_date": forms.DateInput(attrs={"type": "date", "class": "input"}),
+            "status": forms.Select(attrs={}),
         }
 
     def clean(self):
@@ -49,7 +60,12 @@ class PaymentForm(forms.ModelForm):
             "status",
         ]
         widgets = {
-            "payment_date": forms.DateInput(attrs={"type": "date"}),
+            "client": forms.Select(attrs={}),
+            "subscription": forms.Select(attrs={}),
+            "amount": forms.NumberInput(attrs={"class": "input", "step": "0.01"}),
+            "payment_date": forms.DateInput(attrs={"type": "date", "class": "input"}),
+            "payment_method": forms.Select(attrs={}),
+            "status": forms.Select(attrs={}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -84,8 +100,9 @@ class InvoiceForm(forms.ModelForm):
         model = Invoice
         fields = ["subscription", "issue_date", "due_date"]
         widgets = {
-            "issue_date": forms.DateInput(attrs={"type": "date"}),
-            "due_date": forms.DateInput(attrs={"type": "date"}),
+            "subscription": forms.Select(attrs={}),
+            "issue_date": forms.DateInput(attrs={"type": "date", "class": "input"}),
+            "due_date": forms.DateInput(attrs={"type": "date", "class": "input"}),
         }
 
     def clean(self):
