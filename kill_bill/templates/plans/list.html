@@ -1,44 +1,56 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="level">
-    <div class="level-left">
-        <h1 class="title">Subscription Plans</h1>
-    </div>
-    <div class="level-right">
-        <a href="{% url 'plan_create' %}" class="button is-primary">New Plan</a>
+<div class="page-header">
+    <h1 class="page-title">Subscription Plans</h1>
+    <div class="buttons">
+        <a href="{% url 'plan_create' %}" class="button is-primary">
+            <span>+ New Plan</span>
+        </a>
     </div>
 </div>
-<table class="table is-fullwidth is-striped">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Monthly Price</th>
-        <th>Annual Price</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for plan in plans %}
-        <tr>
-            <td><a href="{% url 'plan_detail' plan.pk %}">{{ plan.name }}</a></td>
-            <td>${{ plan.price_monthly }}</td>
-            <td>${{ plan.price_annual }}</td>
-            <td>
-                {% if plan.is_active %}
-                    <span class="tag is-success">Active</span>
-                {% else %}
-                    <span class="tag is-light">Inactive</span>
-                {% endif %}
-            </td>
-            <td>
-                <a href="{% url 'plan_edit' plan.pk %}" class="button is-small is-link">Edit</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No subscription plans found. <a href="{% url 'plan_create' %}">Create your first plan</a>.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% endblock %}
 
+<div class="card">
+    <div class="card-content p-0">
+        <table class="table is-fullwidth is-hoverable mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Monthly Price</th>
+                    <th>Annual Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                <tr>
+                    <td>
+                        <a href="{% url 'plan_detail' plan.pk %}" class="has-text-weight-medium has-text-dark">
+                            {{ plan.name }}
+                        </a>
+                    </td>
+                    <td>${{ plan.price_monthly }}</td>
+                    <td>${{ plan.price_annual }}</td>
+                    <td>
+                        {% if plan.is_active %}
+                        <span class="tag is-success is-light">Active</span>
+                        {% else %}
+                        <span class="tag is-light">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'plan_edit' plan.pk %}" class="button is-small is-link is-outlined">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="has-text-centered has-text-grey p-6">No subscription plans found. <a
+                            href="{% url 'plan_create' %}">Create your first plan</a>.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

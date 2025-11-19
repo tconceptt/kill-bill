@@ -1,45 +1,85 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="level">
-    <div class="level-left">
-        <h1 class="title">Subscriptions</h1>
-    </div>
-    <div class="level-right">
-        <a href="{% url 'subscription_create' %}" class="button is-primary">New Subscription</a>
+<div class="page-header">
+    <h1 class="page-title">Subscriptions</h1>
+    <div class="buttons">
+        <a href="{% url 'subscription_create' %}" class="button is-primary">
+            <span>+ New Subscription</span>
+        </a>
     </div>
 </div>
-<div class="tabs">
+
+<div class="tabs is-boxed is-medium mb-5">
     <ul>
-        <li class="{% if not filter %}is-active{% endif %}"><a href="{% url 'subscription_list' %}">All</a></li>
-        <li class="{% if filter == 'active' %}is-active{% endif %}"><a href="?status=active">Active</a></li>
-        <li class="{% if filter == 'expiring' %}is-active{% endif %}"><a href="?status=expiring">Expiring Soon</a></li>
-        <li class="{% if filter == 'expired' %}is-active{% endif %}"><a href="?status=expired">Expired</a></li>
+        <li class="{% if not filter %}is-active{% endif %}">
+            <a href="{% url 'subscription_list' %}">
+                <span>All</span>
+            </a>
+        </li>
+        <li class="{% if filter == 'active' %}is-active{% endif %}">
+            <a href="?status=active">
+                <span>Active</span>
+            </a>
+        </li>
+        <li class="{% if filter == 'expiring' %}is-active{% endif %}">
+            <a href="?status=expiring">
+                <span>Expiring Soon</span>
+            </a>
+        </li>
+        <li class="{% if filter == 'expired' %}is-active{% endif %}">
+            <a href="?status=expired">
+                <span>Expired</span>
+            </a>
+        </li>
     </ul>
 </div>
-<table class="table is-fullwidth is-striped">
-    <thead>
-    <tr>
-        <th>Client</th>
-        <th>Plan</th>
-        <th>Billing Cycle</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Status</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for subscription in subscriptions %}
-        <tr class="{% if subscription.status == 'expired' %}overdue{% elif subscription.is_expiring_soon %}expiring{% endif %}">
-            <td><a href="{% url 'subscription_detail' subscription.pk %}">{{ subscription.client.company_name }}</a></td>
-            <td>{{ subscription.plan.name }}</td>
-            <td>{{ subscription.get_billing_cycle_display }}</td>
-            <td>{{ subscription.start_date }}</td>
-            <td>{{ subscription.end_date }}</td>
-            <td>{{ subscription.get_status_display }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="6">No subscriptions found.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+
+<div class="card">
+    <div class="card-content p-0">
+        <table class="table is-fullwidth is-hoverable mb-0">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Plan</th>
+                    <th>Billing Cycle</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subscription in subscriptions %}
+                <tr>
+                    <td>
+                        <a href="{% url 'subscription_detail' subscription.pk %}"
+                            class="has-text-weight-medium has-text-dark">
+                            {{ subscription.client.company_name }}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="tag is-light">{{ subscription.plan.name }}</span>
+                    </td>
+                    <td>{{ subscription.get_billing_cycle_display }}</td>
+                    <td>{{ subscription.start_date }}</td>
+                    <td>{{ subscription.end_date }}</td>
+                    <td>
+                        {% if subscription.status == 'active' %}
+                        <span class="tag is-success is-light">Active</span>
+                        {% elif subscription.status == 'expired' %}
+                        <span class="tag is-danger is-light">Expired</span>
+                        {% else %}
+                        <span class="tag is-light">{{ subscription.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="has-text-centered has-text-grey p-6">No subscriptions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

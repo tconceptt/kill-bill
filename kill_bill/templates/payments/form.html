@@ -1,27 +1,74 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h1 class="title">{{ title }}</h1>
-<form method="post" class="box">
-    {% csrf_token %}
-    {% for field in form %}
-        <div class="field">
-            <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            <div class="control">
-                {% if field.field.choices or field.field.queryset %}
-                    <div class="select is-fullwidth">
-                        {{ field }}
-                    </div>
-                {% else %}
-                    {{ field }}
-                {% endif %}
+<div class="columns is-centered">
+    <div class="column is-8-tablet is-6-desktop">
+        <div class="page-header mb-4">
+            <h1 class="page-title">{{ title }}</h1>
+            <div class="buttons">
+                <a href="javascript:history.back()" class="button is-light">Cancel</a>
             </div>
-            {% for error in field.errors %}
-                <p class="help is-danger">{{ error }}</p>
-            {% endfor %}
         </div>
-    {% endfor %}
-    <div class="field">
-        <button type="submit" class="button is-primary">Save</button>
+
+        <div class="card">
+            <div class="card-content">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                    <div class="field mb-4">
+                        <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="control">
+                            {% if field.field.choices or field.field.queryset %}
+                            <div class="select is-fullwidth">
+                                {{ field }}
+                            </div>
+                            {% else %}
+                            {{ field }}
+                            {% endif %}
+                        </div>
+                        {% if field.help_text %}
+                        <p class="help">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <p class="help is-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="field mt-6">
+                        <button type="submit" class="button is-primary is-fullwidth">
+                            <span>Record Payment</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-</form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add Bulma classes to form inputs
+        const inputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="date"], input[type="url"], textarea');
+        inputs.forEach(input => {
+            input.classList.add('input');
+        });
+
+        const selects = document.querySelectorAll('select');
+        // Selects are usually wrapped in a div.select, but the select element itself doesn't need a class in Bulma if wrapped? 
+        // Actually Bulma expects <div class="select"><select>...</select></div>
+        // My template wraps them.
+
+        // Add error classes
+        const errorInputs = document.querySelectorAll('.help.is-danger');
+        errorInputs.forEach(help => {
+            const field = help.closest('.field');
+            if (field) {
+                const input = field.querySelector('.input, .textarea, select');
+                if (input) input.classList.add('is-danger');
+            }
+        });
+    });
+</script>
 {% endblock %}

@@ -1,45 +1,69 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="level">
-    <div class="level-left">
-        <h1 class="title">Clients</h1>
-    </div>
-    <div class="level-right">
-        <a href="{% url 'client_create' %}" class="button is-primary">New Client</a>
+<div class="page-header">
+    <h1 class="page-title">Clients</h1>
+    <div class="buttons">
+        <a href="{% url 'client_create' %}" class="button is-primary">
+            <span>+ New Client</span>
+        </a>
     </div>
 </div>
-<form method="get" class="box">
-    <div class="field has-addons">
-        <div class="control is-expanded">
-            <input class="input" type="text" name="search" value="{{ search }}" placeholder="Search by company name">
-        </div>
-        <div class="control">
-            <button class="button is-info" type="submit">Search</button>
-        </div>
+
+<div class="card mb-6">
+    <div class="card-content">
+        <form method="get">
+            <div class="field has-addons">
+                <div class="control is-expanded">
+                    <input class="input" type="text" name="search" value="{{ search }}"
+                        placeholder="Search by company name...">
+                </div>
+                <div class="control">
+                    <button class="button is-primary" type="submit">
+                        <span>Search</span>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
-</form>
-<table class="table is-fullwidth is-striped">
-    <thead>
-    <tr>
-        <th>Company</th>
-        <th>Contact</th>
-        <th>Email</th>
-        <th>Phone</th>
-        <th>Status</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for client in clients %}
-        <tr>
-            <td><a href="{% url 'client_detail' client.pk %}">{{ client.company_name }}</a></td>
-            <td>{{ client.contact_person }}</td>
-            <td>{{ client.email }}</td>
-            <td>{{ client.phone }}</td>
-            <td class="tag is-light">{{ client.get_status_display }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No clients found.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+</div>
+
+<div class="card">
+    <div class="card-content p-0">
+        <table class="table is-fullwidth is-hoverable mb-0">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>
+                        <a href="{% url 'client_detail' client.pk %}" class="has-text-weight-medium has-text-dark">
+                            {{ client.company_name }}
+                        </a>
+                    </td>
+                    <td>{{ client.contact_person }}</td>
+                    <td>
+                        <a href="mailto:{{ client.email }}" class="has-text-grey">{{ client.email }}</a>
+                    </td>
+                    <td>{{ client.phone }}</td>
+                    <td>
+                        <span class="tag is-light">{{ client.get_status_display }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="has-text-centered has-text-grey p-6">No clients found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

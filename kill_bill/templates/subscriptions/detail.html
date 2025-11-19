@@ -1,70 +1,141 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h1 class="title">Subscription for {{ subscription.client.company_name }}</h1>
-<div class="columns">
-    <div class="column is-half">
-        <div class="box">
-            <h2 class="subtitle">Details</h2>
-            <p><strong>Plan:</strong> {{ subscription.plan.name }}</p>
-            <p><strong>Billing Cycle:</strong> {{ subscription.get_billing_cycle_display }}</p>
-            <p><strong>Start Date:</strong> {{ subscription.start_date }}</p>
-            <p><strong>End Date:</strong> {{ subscription.end_date }}</p>
-            <p><strong>Status:</strong> {{ subscription.get_status_display }}</p>
-        </div>
-    </div>
-    <div class="column">
-        <div class="box">
-            <h2 class="subtitle">Invoices</h2>
-            <table class="table is-fullwidth is-striped">
-                <thead>
-                <tr>
-                    <th>Invoice</th>
-                    <th>Amount</th>
-                    <th>Due</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for invoice in invoices %}
-                    <tr>
-                        <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td>
-                        <td>{{ invoice.amount }}</td>
-                        <td>{{ invoice.due_date }}</td>
-                        <td>{{ invoice.get_status_display }}</td>
-                    </tr>
-                {% empty %}
-                    <tr><td colspan="4">No invoices generated.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <a href="{% url 'invoice_create' %}?subscription={{ subscription.pk }}" class="button is-small is-primary">New Invoice</a>
-        </div>
+<div class="page-header">
+    <h1 class="page-title">Subscription Details</h1>
+    <div class="buttons">
+        <a href="{% url 'subscription_list' %}" class="button is-light">Back to List</a>
     </div>
 </div>
-<div class="box">
-    <h2 class="subtitle">Payments</h2>
-    <table class="table is-fullwidth is-striped">
-        <thead>
-        <tr>
-            <th>Amount</th>
-            <th>Date</th>
-            <th>Method</th>
-            <th>Status</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for payment in payments %}
-            <tr>
-                <td>{{ payment.amount }}</td>
-                <td>{{ payment.payment_date }}</td>
-                <td>{{ payment.get_payment_method_display }}</td>
-                <td>{{ payment.get_status_display }}</td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="4">No payments yet.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <a href="{% url 'payment_create' %}?subscription={{ subscription.pk }}" class="button is-small is-link">Record Payment</a>
+
+<div class="columns is-variable is-6">
+    <div class="column is-4">
+        <div class="card h-full">
+            <div class="card-header">
+                <p class="card-header-title">Overview</p>
+            </div>
+            <div class="card-content">
+                <div class="content">
+                    <h3 class="title is-4 mb-2">{{ subscription.client.company_name }}</h3>
+                    <span class="tag is-primary is-light mb-4">{{ subscription.plan.name }}</span>
+
+                    <div class="field mt-4">
+                        <label class="label is-small has-text-grey">Billing Cycle</label>
+                        <div class="control">{{ subscription.get_billing_cycle_display }}</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label is-small has-text-grey">Start Date</label>
+                        <div class="control">{{ subscription.start_date }}</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label is-small has-text-grey">End Date</label>
+                        <div class="control">{{ subscription.end_date }}</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label is-small has-text-grey">Status</label>
+                        <div class="control">
+                            <span
+                                class="tag {% if subscription.status == 'active' %}is-success{% elif subscription.status == 'expired' %}is-danger{% else %}is-warning{% endif %} is-light">
+                                {{ subscription.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column is-8">
+        <div class="card mb-6">
+            <div class="card-header level p-3">
+                <div class="level-left">
+                    <p class="card-header-title m-0">Invoices</p>
+                </div>
+                <div class="level-right">
+                    <a href="{% url 'invoice_create' %}?subscription={{ subscription.pk }}"
+                        class="button is-small is-primary is-outlined">
+                        + New Invoice
+                    </a>
+                </div>
+            </div>
+            <div class="card-content p-0">
+                <table class="table is-fullwidth is-hoverable mb-0">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Amount</th>
+                            <th>Due</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'invoice_detail' invoice.pk %}" class="has-text-weight-medium">
+                                    {{ invoice.invoice_number }}
+                                </a>
+                            </td>
+                            <td class="has-text-weight-bold">{{ invoice.amount }}</td>
+                            <td>{{ invoice.due_date }}</td>
+                            <td>
+                                <span class="tag is-light">{{ invoice.get_status_display }}</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="has-text-centered has-text-grey p-4">No invoices generated.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header level p-3">
+                <div class="level-left">
+                    <p class="card-header-title m-0">Payments</p>
+                </div>
+                <div class="level-right">
+                    <a href="{% url 'payment_create' %}?subscription={{ subscription.pk }}"
+                        class="button is-small is-link is-outlined">
+                        + Record Payment
+                    </a>
+                </div>
+            </div>
+            <div class="card-content p-0">
+                <table class="table is-fullwidth is-hoverable mb-0">
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td class="has-text-weight-bold">{{ payment.amount }}</td>
+                            <td>{{ payment.payment_date }}</td>
+                            <td>{{ payment.get_payment_method_display }}</td>
+                            <td>
+                                <span class="tag is-light">{{ payment.get_status_display }}</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="has-text-centered has-text-grey p-4">No payments yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

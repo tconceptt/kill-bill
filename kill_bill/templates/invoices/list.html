@@ -1,45 +1,72 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="level">
-    <div class="level-left">
-        <h1 class="title">Invoices</h1>
-    </div>
-    <div class="level-right">
-        <a href="{% url 'invoice_create' %}" class="button is-primary">New Invoice</a>
+<div class="page-header">
+    <h1 class="page-title">Invoices</h1>
+    <div class="buttons">
+        <a href="{% url 'invoice_create' %}" class="button is-primary">
+            <span>+ New Invoice</span>
+        </a>
     </div>
 </div>
-<div class="tabs">
+
+<div class="tabs is-boxed is-medium mb-4">
     <ul>
-        <li class="{% if not status_filter %}is-active{% endif %}"><a href="{% url 'invoice_list' %}">All</a></li>
-        <li class="{% if status_filter == 'unpaid' %}is-active{% endif %}"><a href="?status=unpaid">Unpaid</a></li>
-        <li class="{% if status_filter == 'paid' %}is-active{% endif %}"><a href="?status=paid">Paid</a></li>
-        <li class="{% if status_filter == 'overdue' %}is-active{% endif %}"><a href="?status=overdue">Overdue</a></li>
+        <li class="{% if not status_filter %}is-active{% endif %}">
+            <a href="{% url 'invoice_list' %}">All</a>
+        </li>
+        <li class="{% if status_filter == 'unpaid' %}is-active{% endif %}">
+            <a href="?status=unpaid">Unpaid</a>
+        </li>
+        <li class="{% if status_filter == 'paid' %}is-active{% endif %}">
+            <a href="?status=paid">Paid</a>
+        </li>
+        <li class="{% if status_filter == 'overdue' %}is-active{% endif %}">
+            <a href="?status=overdue">Overdue</a>
+        </li>
     </ul>
 </div>
-<table class="table is-fullwidth is-striped">
-    <thead>
-    <tr>
-        <th>Invoice</th>
-        <th>Client</th>
-        <th>Amount</th>
-        <th>Issue Date</th>
-        <th>Due Date</th>
-        <th>Status</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for invoice in invoices %}
-        <tr class="{% if invoice.status == 'overdue' %}overdue{% endif %}">
-            <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td>
-            <td>{{ invoice.subscription.client.company_name }}</td>
-            <td>{{ invoice.amount }}</td>
-            <td>{{ invoice.issue_date }}</td>
-            <td>{{ invoice.due_date }}</td>
-            <td>{{ invoice.get_status_display }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="6">No invoices found.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+
+<div class="card">
+    <div class="card-content p-0">
+        <table class="table is-fullwidth is-hoverable mb-0">
+            <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Client</th>
+                    <th>Amount</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr class="{% if invoice.status == 'overdue' %}has-background-danger-light{% endif %}">
+                    <td>
+                        <a href="{% url 'invoice_detail' invoice.pk %}" class="has-text-weight-medium has-text-dark">
+                            {{ invoice.invoice_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'client_detail' invoice.subscription.client.pk %}" class="has-text-grey-dark">
+                            {{ invoice.subscription.client.company_name }}
+                        </a>
+                    </td>
+                    <td class="has-text-weight-bold">{{ invoice.amount }}</td>
+                    <td>{{ invoice.issue_date }}</td>
+                    <td>{{ invoice.due_date }}</td>
+                    <td>
+                        <span class="tag is-light">{{ invoice.get_status_display }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="has-text-centered has-text-grey p-6">No invoices found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

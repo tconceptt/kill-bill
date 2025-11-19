@@ -1,37 +1,93 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="level">
-    <div class="level-left">
-        <h1 class="title">Invoice {{ invoice.invoice_number }}</h1>
-    </div>
-    <div class="level-right">
-        <a class="button is-link" href="{% url 'invoice_print' invoice.pk %}" target="_blank">Print View</a>
-    </div>
-</div>
-<div class="box">
-    <div class="columns">
-        <div class="column">
-            <p><strong>Client:</strong> {{ invoice.subscription.client.company_name }}</p>
-            <p><strong>Plan:</strong> {{ invoice.subscription.plan.name }}</p>
-            <p><strong>Billing Cycle:</strong> {{ invoice.subscription.get_billing_cycle_display }}</p>
-        </div>
-        <div class="column">
-            <p><strong>Amount:</strong> {{ invoice.amount }}</p>
-            <p><strong>Issue Date:</strong> {{ invoice.issue_date }}</p>
-            <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
-        </div>
-        <div class="column">
-            <p><strong>Status:</strong> {{ invoice.get_status_display }}</p>
-            {% if invoice.last_reminder_sent_at %}
-                <p><strong>Last Reminder:</strong> {{ invoice.last_reminder_sent_at }}</p>
-            {% endif %}
-        </div>
+<div class="page-header">
+    <h1 class="page-title">Invoice {{ invoice.invoice_number }}</h1>
+    <div class="buttons">
+        <a class="button is-primary is-outlined" href="{% url 'invoice_print' invoice.pk %}" target="_blank">
+            <span>Print View</span>
+        </a>
     </div>
 </div>
-{% if invoice.status != 'paid' %}
-<form method="post" action="{% url 'invoice_mark_paid' invoice.pk %}">
-    {% csrf_token %}
-    <button class="button is-success">Mark as Paid</button>
-</form>
-{% endif %}
+
+<div class="columns is-variable is-6">
+    <div class="column is-8">
+        <div class="card mb-6">
+            <div class="card-header">
+                <p class="card-header-title">Invoice Details</p>
+            </div>
+            <div class="card-content">
+                <div class="columns">
+                    <div class="column is-6">
+                        <div class="field">
+                            <label class="label is-small has-text-grey">Client</label>
+                            <div class="control">
+                                <a href="{% url 'client_detail' invoice.subscription.client.pk %}"
+                                    class="has-text-weight-medium">
+                                    {{ invoice.subscription.client.company_name }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label is-small has-text-grey">Plan</label>
+                            <div class="control">{{ invoice.subscription.plan.name }}</div>
+                        </div>
+                        <div class="field">
+                            <label class="label is-small has-text-grey">Billing Cycle</label>
+                            <div class="control">{{ invoice.subscription.get_billing_cycle_display }}</div>
+                        </div>
+                    </div>
+                    <div class="column is-6">
+                        <div class="field">
+                            <label class="label is-small has-text-grey">Amount</label>
+                            <div class="control has-text-weight-bold is-size-5">{{ invoice.amount }}</div>
+                        </div>
+                        <div class="field">
+                            <label class="label is-small has-text-grey">Issue Date</label>
+                            <div class="control">{{ invoice.issue_date }}</div>
+                        </div>
+                        <div class="field">
+                            <label class="label is-small has-text-grey">Due Date</label>
+                            <div class="control has-text-danger">{{ invoice.due_date }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column is-4">
+        <div class="card">
+            <div class="card-header">
+                <p class="card-header-title">Status & Actions</p>
+            </div>
+            <div class="card-content">
+                <div class="field mb-4">
+                    <label class="label is-small has-text-grey">Current Status</label>
+                    <div class="control">
+                        <span class="tag is-medium is-light">{{ invoice.get_status_display }}</span>
+                    </div>
+                </div>
+
+                {% if invoice.last_reminder_sent_at %}
+                <div class="field mb-4">
+                    <label class="label is-small has-text-grey">Last Reminder</label>
+                    <div class="control">{{ invoice.last_reminder_sent_at }}</div>
+                </div>
+                {% endif %}
+
+                {% if invoice.status != 'paid' %}
+                <div class="mt-5">
+                    <form method="post" action="{% url 'invoice_mark_paid' invoice.pk %}">
+                        {% csrf_token %}
+                        <button class="button is-success is-fullwidth">
+                            <span>Mark as Paid</span>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

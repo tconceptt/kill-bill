@@ -1,76 +1,123 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h1 class="title">Dashboard</h1>
-<div class="columns">
+<div class="page-header">
+    <h1 class="page-title">Dashboard</h1>
+    <div class="buttons">
+        <a href="{% url 'subscription_create' %}" class="button is-primary">
+            <span>+ New Subscription</span>
+        </a>
+    </div>
+</div>
+
+<div class="columns is-variable is-6 mb-6">
     <div class="column">
-        <div class="box has-text-centered">
-            <p class="heading">Active Subscriptions</p>
-            <p class="title">{{ active_subscriptions }}</p>
+        <div class="card h-full">
+            <div class="stat-card">
+                <span class="stat-label">Active Subscriptions</span>
+                <span class="stat-value has-text-primary">{{ active_subscriptions }}</span>
+            </div>
         </div>
     </div>
     <div class="column">
-        <div class="box has-text-centered">
-            <p class="heading">Expiring in 30 days</p>
-            <p class="title">{{ expiring_count }}</p>
+        <div class="card h-full">
+            <div class="stat-card">
+                <span class="stat-label">Expiring (30 Days)</span>
+                <span class="stat-value has-text-warning">{{ expiring_count }}</span>
+            </div>
         </div>
     </div>
     <div class="column">
-        <div class="box has-text-centered">
-            <p class="heading">Overdue invoices</p>
-            <p class="title">{{ overdue_total }}</p>
-            <p class="subtitle">Total amount: {{ overdue_sum }}</p>
+        <div class="card h-full">
+            <div class="stat-card">
+                <span class="stat-label">Overdue Invoices</span>
+                <span class="stat-value has-text-danger">{{ overdue_total }}</span>
+                <span class="is-size-7 has-text-grey mt-2">Total: {{ overdue_sum }}</span>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="columns">
-    <div class="column">
-        <h2 class="subtitle">Expiring Soon</h2>
-        <table class="table is-fullwidth is-striped">
-            <thead>
-            <tr>
-                <th>Client</th>
-                <th>Plan</th>
-                <th>End Date</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for subscription in expiring_soon %}
-                <tr class="expiring">
-                    <td>{{ subscription.client.company_name }}</td>
-                    <td>{{ subscription.plan.name }}</td>
-                    <td>{{ subscription.end_date }}</td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="3">No subscriptions expiring soon.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+<div class="columns is-variable is-6">
+    <div class="column is-6">
+        <div class="card">
+            <div class="card-header">
+                <p class="card-header-title">Expiring Soon</p>
+            </div>
+            <div class="card-content p-0">
+                <table class="table is-fullwidth is-hoverable mb-0">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Plan</th>
+                            <th>End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subscription in expiring_soon %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'subscription_detail' subscription.pk %}"
+                                    class="has-text-weight-medium has-text-dark">
+                                    {{ subscription.client.company_name }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="tag is-light">{{ subscription.plan.name }}</span>
+                            </td>
+                            <td>
+                                <span class="has-text-warning-dark">{{ subscription.end_date }}</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="has-text-centered has-text-grey p-4">No subscriptions expiring soon.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <div class="column">
-        <h2 class="subtitle">Overdue Invoices</h2>
-        <table class="table is-fullwidth is-striped">
-            <thead>
-            <tr>
-                <th>Invoice</th>
-                <th>Client</th>
-                <th>Amount</th>
-                <th>Due</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for invoice in overdue_invoices %}
-                <tr class="overdue">
-                    <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td>
-                    <td>{{ invoice.subscription.client.company_name }}</td>
-                    <td>{{ invoice.amount }}</td>
-                    <td>{{ invoice.due_date }}</td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="4">No overdue invoices.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+
+    <div class="column is-6">
+        <div class="card">
+            <div class="card-header">
+                <p class="card-header-title">Overdue Invoices</p>
+            </div>
+            <div class="card-content p-0">
+                <table class="table is-fullwidth is-hoverable mb-0">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Client</th>
+                            <th>Amount</th>
+                            <th>Due</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in overdue_invoices %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'invoice_detail' invoice.pk %}"
+                                    class="has-text-weight-medium has-text-primary">
+                                    {{ invoice.invoice_number }}
+                                </a>
+                            </td>
+                            <td>{{ invoice.subscription.client.company_name }}</td>
+                            <td class="has-text-weight-bold">{{ invoice.amount }}</td>
+                            <td class="has-text-danger">{{ invoice.due_date }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="has-text-centered has-text-grey p-4">No overdue invoices.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
