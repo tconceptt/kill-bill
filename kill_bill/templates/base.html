@@ -1,116 +1,121 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Subscription Manager</title>
-    
+
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Bulma CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
+
 <body>
 
-<nav class="navbar" role="navigation" aria-label="main navigation">
-    <div class="container">
-        <div class="navbar-brand">
-            <a class="navbar-item" href="{% url 'dashboard' %}">
-                <span class="icon-text">
-                    <span>⚡️</span>
-                    <span style="margin-left: 0.5rem;">KillBill</span>
-                </span>
-            </a>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="{% url 'dashboard' %}">
+                    <span class="icon-text">
+                        <span>⚡️</span>
+                        <span style="margin-left: 0.5rem;">KillBill</span>
+                    </span>
+                </a>
 
-            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a>
-        </div>
-
-        <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-start">
-                <a class="navbar-item" href="{% url 'dashboard' %}">Dashboard</a>
-                <a class="navbar-item" href="{% url 'subscription_list' %}">Subscriptions</a>
-                <a class="navbar-item" href="{% url 'client_list' %}">Clients</a>
-                <a class="navbar-item" href="{% url 'plan_list' %}">Plans</a>
-                <a class="navbar-item" href="{% url 'invoice_list' %}">Invoices</a>
-                <a class="navbar-item" href="{% url 'payment_list' %}">Payments</a>
-                <a class="navbar-item" href="{% url 'reminders' %}">Reminders</a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                    data-target="navbarBasicExample">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
             </div>
 
-            <div class="navbar-end">
-                <div class="navbar-item">
-                    <div class="buttons">
-                        <form method="post" action="{% url 'logout' %}">
-                            {% csrf_token %}
-                            <button class="button is-light is-small" type="submit">
-                                <span>Log out</span>
-                            </button>
-                        </form>
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="{% url 'dashboard' %}">Dashboard</a>
+                    <a class="navbar-item" href="{% url 'subscription_list' %}">Subscriptions</a>
+                    <a class="navbar-item" href="{% url 'client_list' %}">Clients</a>
+                    <a class="navbar-item" href="{% url 'plan_list' %}">Plans</a>
+                    <a class="navbar-item" href="{% url 'invoice_list' %}">Invoices</a>
+                    <a class="navbar-item" href="{% url 'payment_list' %}">Payments</a>
+                    <a class="navbar-item" href="{% url 'reminders' %}">Reminders</a>
+                    <a class="navbar-item" href="{% url 'email_log_list' %}">Emails</a>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button class="button is-light is-small" type="submit">
+                                    <span>Log out</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<section class="section">
-    <div class="container">
-        {% if messages %}
+    <section class="section">
+        <div class="container">
+            {% if messages %}
             <div class="columns is-centered">
                 <div class="column is-half">
                     {% for message in messages %}
-                        <div class="notification is-{{ message.tags }} is-light">
-                            <button class="delete"></button>
-                            {{ message }}
-                        </div>
+                    <div class="notification is-{{ message.tags }} is-light">
+                        <button class="delete"></button>
+                        {{ message }}
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-        {% endif %}
-        
-        {% block content %}{% endblock %}
-    </div>
-</section>
+            {% endif %}
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Get all "navbar-burger" elements
-        const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+            {% block content %}{% endblock %}
+        </div>
+    </section>
 
-        // Check if there are any navbar burgers
-        if ($navbarBurgers.length > 0) {
-            // Add a click event on each of them
-            $navbarBurgers.forEach( el => {
-                el.addEventListener('click', () => {
-                    // Get the target from the "data-target" attribute
-                    const target = el.dataset.target;
-                    const $target = document.getElementById(target);
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all "navbar-burger" elements
+            const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
 
-                    // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-                    el.classList.toggle('is-active');
-                    $target.classList.toggle('is-active');
+            // Check if there are any navbar burgers
+            if ($navbarBurgers.length > 0) {
+                // Add a click event on each of them
+                $navbarBurgers.forEach(el => {
+                    el.addEventListener('click', () => {
+                        // Get the target from the "data-target" attribute
+                        const target = el.dataset.target;
+                        const $target = document.getElementById(target);
+
+                        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+                        el.classList.toggle('is-active');
+                        $target.classList.toggle('is-active');
+                    });
+                });
+            }
+
+            // Notification delete button
+            (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+                const $notification = $delete.parentNode;
+                $delete.addEventListener('click', () => {
+                    $notification.parentNode.removeChild($notification);
                 });
             });
-        }
-        
-        // Notification delete button
-        (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
-            const $notification = $delete.parentNode;
-            $delete.addEventListener('click', () => {
-                $notification.parentNode.removeChild($notification);
-            });
         });
-    });
-</script>
+    </script>
 </body>
+
 </html>

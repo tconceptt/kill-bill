@@ -1,0 +1,7 @@
+Dear {{ subscription.client.contact_person }},
+
+This is a reminder that your subscription for {{ subscription.plan.name }} is expiring on {{ subscription.end_date }}.
+
+Please renew your subscription to avoid any interruption in service.
+
+(c) {% now "Y" %} Kill Bill. All rights reserved.

@@ -349,3 +349,10 @@ def plan_detail(request, pk):
         "plans/detail.html",
         {"plan": plan, "subscriptions": subscriptions, "active_count": active_count},
     )
+
+
+@login_required
+def email_log_list(request):
+    from .models import EmailLog
+    email_logs = EmailLog.objects.all()
+    return render(request, "emails/list.html", {"email_logs": email_logs})

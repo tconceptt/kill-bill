@@ -197,3 +197,20 @@ def get_reminder_invoices() -> ReminderSummary:
         due_date__lt=today,
     )
     return upcoming, overdue
+
+
+class EmailLog(TimeStampedModel):
+    class Status(models.TextChoices):
+        SENT = "sent", "Sent"
+        FAILED = "failed", "Failed"
+
+    recipient = models.EmailField()
+    subject = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.SENT)
+    error_message = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.subject} to {self.recipient} ({self.status})"

@@ -1,0 +1,7 @@
+Dear {{ subscription.client.contact_person }},
+
+Your subscription for {{ subscription.plan.name }} expired on {{ subscription.end_date }}.
+
+Please contact us to renew your subscription.
+
+(c) {% now "Y" %} Kill Bill. All rights reserved.

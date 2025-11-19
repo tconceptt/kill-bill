@@ -1,0 +1,12 @@
+Dear {{ subscription.client.contact_person }},
+
+Your subscription for {{ subscription.plan.name }} has been successfully created.
+
+Details:
+- Start Date: {{ subscription.start_date }}
+- End Date: {{ subscription.end_date }}
+- Billing Cycle: {{ subscription.get_billing_cycle_display }}
+
+Thank you for choosing Kill Bill!
+
+(c) {% now "Y" %} Kill Bill. All rights reserved.
