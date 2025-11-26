@@ -31,4 +31,5 @@ urlpatterns = [
     path("plans/new/", views.plan_create, name="plan_create"),
     path("plans/<int:pk>/", views.plan_detail, name="plan_detail"),
     path("plans/<int:pk>/edit/", views.plan_edit, name="plan_edit"),
+    path("settings/", views.settings_view, name="settings"),
 ]

@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from django import forms
 
-from .models import Client, Invoice, Payment, Subscription, SubscriptionPlan
+from .models import Client, Invoice, Payment, SiteConfiguration, Subscription, SubscriptionPlan
 
 
 class SubscriptionPlanForm(forms.ModelForm):
@@ -146,3 +146,17 @@ class InvoiceForm(forms.ModelForm):
         if commit:
             invoice.save()
         return invoice
+
+
+class SiteConfigurationForm(forms.ModelForm):
+    class Meta:
+        model = SiteConfiguration
+        fields = ["invoice_days_before_expiry"]
+        widgets = {
+            "invoice_days_before_expiry": forms.NumberInput(
+                attrs={"class": "input", "min": "1", "max": "90"}
+            ),
+        }
+        labels = {
+            "invoice_days_before_expiry": "Days before expiry to send invoice",
+        }

@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.core import mail
 from django.utils import timezone
 from django.core.management import call_command
-from kill_bill.core.models import Client, Subscription, SubscriptionPlan
+from kill_bill.core.models import Client, Invoice, Subscription, SubscriptionPlan
 from datetime import timedelta
 
 class SubscriptionEmailTest(TestCase):
@@ -42,7 +42,7 @@ class SubscriptionEmailTest(TestCase):
         self.assertEqual(log.status, EmailLog.Status.SENT)
 
     def test_subscription_expiring_soon_email(self):
-        # Create a subscription expiring in 7 days
+        # Create a subscription expiring in 7 days (default invoice_days_before_expiry)
         today = timezone.now().date()
         end_date = today + timedelta(days=7)
         start_date = end_date - timedelta(days=30)
@@ -60,15 +60,24 @@ class SubscriptionEmailTest(TestCase):
         
         call_command('send_subscription_emails')
         
+        # Check that invoice was created
+        self.assertEqual(Invoice.objects.count(), 1)
+        invoice = Invoice.objects.first()
+        self.assertEqual(invoice.subscription_id, sub.pk)
+        self.assertEqual(invoice.due_date, end_date)
+        self.assertEqual(invoice.amount, self.plan.price_monthly)
+        
+        # Check email was sent with invoice details
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "Action Required: Subscription Expiring Soon")
+        self.assertIn("Invoice", mail.outbox[0].subject)
+        self.assertIn("Subscription Renewal Due", mail.outbox[0].subject)
         
         # Check log (should be 2 now, 1 from creation, 1 from command)
         from kill_bill.core.models import EmailLog
         self.assertEqual(EmailLog.objects.count(), 2)
         log = EmailLog.objects.first()
         self.assertEqual(log.recipient, "john@example.com")
-        self.assertEqual(log.subject, "Action Required: Subscription Expiring Soon")
+        self.assertIn("Invoice", log.subject)
 
     def test_subscription_expired_email(self):
         # Create a subscription expired yesterday

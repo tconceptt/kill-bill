@@ -9,8 +9,8 @@ from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import ClientForm, InvoiceForm, PaymentForm, SubscriptionForm, SubscriptionPlanForm
-from .models import Client, Invoice, Payment, Subscription, SubscriptionPlan, get_reminder_invoices
+from .forms import ClientForm, InvoiceForm, PaymentForm, SiteConfigurationForm, SubscriptionForm, SubscriptionPlanForm
+from .models import Client, Invoice, Payment, SiteConfiguration, Subscription, SubscriptionPlan, get_reminder_invoices
 
 
 class AdminLoginView(LoginView):
@@ -356,3 +356,35 @@ def email_log_list(request):
     from .models import EmailLog
     email_logs = EmailLog.objects.all()
     return render(request, "emails/list.html", {"email_logs": email_logs})
+
+
+@login_required
+def settings_view(request):
+    from .utils import process_expiring_subscriptions
+
+    config = SiteConfiguration.get_config()
+    results = None
+
+    if request.method == "POST":
+        form = SiteConfigurationForm(request.POST, instance=config)
+        if form.is_valid():
+            config = form.save()
+            
+            # Process expiring subscriptions with the new config
+            results = process_expiring_subscriptions(config.invoice_days_before_expiry)
+            
+            if results["invoices_created"] > 0:
+                messages.success(
+                    request,
+                    f"Settings updated. Created {results['invoices_created']} invoice(s) "
+                    f"and sent {results['emails_sent']} email(s) for subscriptions "
+                    f"expiring within {config.invoice_days_before_expiry} days."
+                )
+            else:
+                messages.success(request, "Settings updated successfully")
+            
+            return redirect("settings")
+    else:
+        form = SiteConfigurationForm(instance=config)
+    
+    return render(request, "settings.html", {"form": form, "config": config, "results": results})

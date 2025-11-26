@@ -214,3 +214,27 @@ class EmailLog(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.subject} to {self.recipient} ({self.status})"
+
+
+class SiteConfiguration(models.Model):
+    invoice_days_before_expiry = models.PositiveIntegerField(
+        default=7,
+        help_text="Number of days before subscription expiry to generate and send invoice"
+    )
+
+    class Meta:
+        verbose_name = "Site Configuration"
+        verbose_name_plural = "Site Configuration"
+
+    def __str__(self) -> str:
+        return "Site Configuration"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one configuration instance exists (singleton pattern)
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_config(cls) -> "SiteConfiguration":
+        config, _ = cls.objects.get_or_create(pk=1)
+        return config

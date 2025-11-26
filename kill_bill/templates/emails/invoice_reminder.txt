@@ -1,0 +1,28 @@
+INVOICE FOR UPCOMING SUBSCRIPTION RENEWAL
+=========================================
+
+Dear {{ subscription.client.contact_person }},
+
+Your subscription for {{ subscription.plan.name }} is expiring soon.
+Please find your invoice details below:
+
+INVOICE DETAILS
+---------------
+Invoice Number: {{ invoice.invoice_number }}
+Plan: {{ subscription.plan.name }} ({{ subscription.get_billing_cycle_display }})
+Amount Due: {{ invoice.amount }}
+Issue Date: {{ invoice.issue_date }}
+Due Date: {{ invoice.due_date }}
+
+IMPORTANT REMINDER
+------------------
+Your subscription expires on {{ subscription.end_date }}.
+Please make payment by the due date to ensure uninterrupted service.
+
+If you have already made the payment, please disregard this notice.
+
+Thank you for your continued business.
+
+---
+(c) {% now "Y" %} Kill Bill. All rights reserved.
+

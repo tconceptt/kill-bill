@@ -1,59 +1,90 @@
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.template.loader import render_to_string
-from kill_bill.core.utils import send_and_log_email
-from kill_bill.core.models import Subscription
 from datetime import timedelta
 
+from django.core.management.base import BaseCommand
+from django.template.loader import render_to_string
+from django.utils import timezone
+
+from kill_bill.core.models import SiteConfiguration, Subscription
+from kill_bill.core.utils import process_expiring_subscriptions, send_and_log_email
+
+
 class Command(BaseCommand):
-    help = 'Sends automated emails for expiring and expired subscriptions'
+    help = "Sends automated emails for expiring and expired subscriptions, and generates invoices"
 
     def handle(self, *args, **options):
         today = timezone.now().date()
-        
-        # 1. Expiring Soon (7 days from now)
-        expiring_date = today + timedelta(days=7)
-        expiring_subscriptions = Subscription.objects.filter(
-            end_date=expiring_date,
-            status=Subscription.Status.ACTIVE
-        )
-        
-        self.stdout.write(f"Found {expiring_subscriptions.count()} subscriptions expiring on {expiring_date}")
-        
-        for sub in expiring_subscriptions:
-            self.send_email(
-                sub,
-                "Action Required: Subscription Expiring Soon",
-                "emails/subscription_expiring"
-            )
+        config = SiteConfiguration.get_config()
+        days_before = config.invoice_days_before_expiry
 
-        # 2. Expired (Yesterday)
+        self.stdout.write(
+            self.style.MIGRATE_HEADING(
+                f"Running subscription emails (invoice {days_before} days or less before expiry)"
+            )
+        )
+
+        # 1. Generate invoices and send reminders for subscriptions expiring within configured days
+        results = process_expiring_subscriptions(days_before)
+
+        self.stdout.write(
+            f"Found {results['subscriptions_found']} subscriptions expiring within {days_before} days"
+        )
+
+        for detail in results["details"]:
+            if detail["action"] == "created":
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"  Created invoice {detail['invoice']} for {detail['client']}"
+                    )
+                )
+                if detail["email_sent"]:
+                    self.stdout.write(
+                        self.style.SUCCESS(f"  Sent invoice email to {detail['client']}")
+                    )
+                else:
+                    self.stdout.write(
+                        self.style.ERROR(f"  Failed to send email to {detail['client']}")
+                    )
+            else:
+                self.stdout.write(
+                    f"  Invoice {detail['invoice']} already exists for {detail['client']}"
+                )
+
+        self.stdout.write(
+            f"Summary: {results['invoices_created']} invoices created, "
+            f"{results['invoices_existing']} already existed, "
+            f"{results['emails_sent']} emails sent"
+        )
+
+        # 2. Expired (Yesterday) - send notification without invoice
         expired_date = today - timedelta(days=1)
-        expired_subscriptions = Subscription.objects.filter(
-            end_date=expired_date
-        )
-        
-        self.stdout.write(f"Found {expired_subscriptions.count()} subscriptions expired on {expired_date}")
-        
-        for sub in expired_subscriptions:
-            self.send_email(
-                sub,
-                "Subscription Expired",
-                "emails/subscription_expired"
-            )
+        expired_subscriptions = Subscription.objects.filter(end_date=expired_date)
 
-    def send_email(self, subscription, subject, template_base):
+        self.stdout.write(
+            f"\nFound {expired_subscriptions.count()} subscriptions expired on {expired_date}"
+        )
+
+        for sub in expired_subscriptions:
+            self.send_email(sub, "Subscription Expired", "emails/subscription_expired")
+
+    def send_email(self, subscription: Subscription, subject: str, template_base: str):
+        """Send a generic subscription email."""
         try:
             context = {"subscription": subscription}
             html_message = render_to_string(f"{template_base}.html", context)
             plain_message = render_to_string(f"{template_base}.txt", context)
-            
+
             send_and_log_email(
                 subject=subject,
                 message=plain_message,
                 recipient_list=[subscription.client.email],
                 html_message=html_message,
             )
-            self.stdout.write(self.style.SUCCESS(f"Sent email to {subscription.client.email}"))
+            self.stdout.write(
+                self.style.SUCCESS(f"  Sent email to {subscription.client.email}")
+            )
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Failed to send email to {subscription.client.email}: {e}"))
+            self.stdout.write(
+                self.style.ERROR(
+                    f"  Failed to send email to {subscription.client.email}: {e}"
+                )
+            )

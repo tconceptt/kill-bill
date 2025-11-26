@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Client, Invoice, Payment, Subscription, SubscriptionPlan
+from .models import Client, Invoice, Payment, SiteConfiguration, Subscription, SubscriptionPlan
 
 
 @admin.register(Client)
@@ -53,3 +53,15 @@ class InvoiceAdmin(admin.ModelAdmin):
     )
     list_filter = ("status",)
     search_fields = ("invoice_number", "subscription__client__company_name")
+
+
+@admin.register(SiteConfiguration)
+class SiteConfigurationAdmin(admin.ModelAdmin):
+    list_display = ("invoice_days_before_expiry",)
+
+    def has_add_permission(self, request):
+        # Only allow one instance
+        return not SiteConfiguration.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False

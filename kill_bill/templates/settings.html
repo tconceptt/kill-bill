@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-half">
+        <div class="box">
+            <h1 class="title is-4">Settings</h1>
+            <h2 class="subtitle is-6 has-text-grey">Configure automated invoicing</h2>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="field">
+                    <label class="label">{{ form.invoice_days_before_expiry.label }}</label>
+                    <div class="control">
+                        {{ form.invoice_days_before_expiry }}
+                    </div>
+                    <p class="help">
+                        Invoices will be generated for all subscriptions expiring within this many days or less.
+                        The invoice due date will be set to the subscription expiry date.
+                    </p>
+                    {% if form.invoice_days_before_expiry.errors %}
+                    <p class="help is-danger">{{ form.invoice_days_before_expiry.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="notification is-info is-light">
+                    <strong>Note:</strong> When you save these settings, invoices will be automatically created 
+                    and emails will be sent to all clients whose subscriptions are expiring within the configured 
+                    number of days (if they don't already have an invoice for that billing period).
+                </div>
+
+                <div class="field is-grouped mt-5">
+                    <div class="control">
+                        <button type="submit" class="button is-primary">Save Settings</button>
+                    </div>
+                    <div class="control">
+                        <a href="{% url 'dashboard' %}" class="button is-light">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="box mt-4">
+            <h2 class="title is-5">Current Configuration</h2>
+            <table class="table is-fullwidth">
+                <tbody>
+                    <tr>
+                        <td><strong>Invoice Days Before Expiry</strong></td>
+                        <td>{{ config.invoice_days_before_expiry }} days</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
