@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from django import forms
 
-from .models import Client, Invoice, Payment, SiteConfiguration, Subscription, SubscriptionPlan
+from .models import Client, Invoice, InvoiceConfiguration, Payment, SiteConfiguration, Subscription, SubscriptionPlan
 
 
 class SubscriptionPlanForm(forms.ModelForm):
@@ -159,4 +159,106 @@ class SiteConfigurationForm(forms.ModelForm):
         }
         labels = {
             "invoice_days_before_expiry": "Days before expiry to send invoice",
+        }
+
+
+class InvoiceConfigurationForm(forms.ModelForm):
+    class Meta:
+        model = InvoiceConfiguration
+        fields = [
+            # Company Details
+            "company_name",
+            "company_address",
+            "company_phone",
+            "company_email",
+            "company_tin",
+            # Bank Details
+            "bank_name",
+            "bank_account_number",
+            "bank_account_name",
+            # Visual Settings
+            "logo",
+            "theme",
+            "font_family",
+            "primary_color",
+            "secondary_color",
+            "background_color",
+            "accent_color",
+        ]
+        widgets = {
+            # Company Details
+            "company_name": forms.TextInput(attrs={
+                "class": "input",
+                "placeholder": "Your Company Name"
+            }),
+            "company_address": forms.Textarea(attrs={
+                "class": "textarea",
+                "rows": 2,
+                "placeholder": "123 Business Street\nCity, Country"
+            }),
+            "company_phone": forms.TextInput(attrs={
+                "class": "input",
+                "placeholder": "+1 234 567 890"
+            }),
+            "company_email": forms.EmailInput(attrs={
+                "class": "input",
+                "placeholder": "billing@yourcompany.com"
+            }),
+            "company_tin": forms.TextInput(attrs={
+                "class": "input",
+                "placeholder": "Tax ID Number"
+            }),
+            # Bank Details
+            "bank_name": forms.TextInput(attrs={
+                "class": "input",
+                "placeholder": "Bank Name"
+            }),
+            "bank_account_number": forms.TextInput(attrs={
+                "class": "input",
+                "placeholder": "Account Number"
+            }),
+            "bank_account_name": forms.TextInput(attrs={
+                "class": "input",
+                "placeholder": "Account Holder Name"
+            }),
+            # Visual Settings
+            "logo": forms.ClearableFileInput(attrs={
+                "class": "file-input",
+                "accept": "image/*"
+            }),
+            "theme": forms.Select(attrs={"class": "select"}),
+            "font_family": forms.Select(attrs={"class": "select"}),
+            "primary_color": forms.TextInput(attrs={
+                "type": "color",
+                "class": "input color-picker"
+            }),
+            "secondary_color": forms.TextInput(attrs={
+                "type": "color",
+                "class": "input color-picker"
+            }),
+            "background_color": forms.TextInput(attrs={
+                "type": "color",
+                "class": "input color-picker"
+            }),
+            "accent_color": forms.TextInput(attrs={
+                "type": "color",
+                "class": "input color-picker"
+            }),
+        }
+        labels = {
+            "company_name": "Company Name",
+            "company_address": "Address",
+            "company_phone": "Phone",
+            "company_email": "Email",
+            "company_tin": "Tax ID (TIN)",
+            "bank_name": "Bank Name",
+            "bank_account_number": "Account Number",
+            "bank_account_name": "Account Name",
+            "logo": "Company Logo",
+            "theme": "Invoice Theme",
+            "font_family": "Font Family",
+            "primary_color": "Primary Color",
+            "secondary_color": "Secondary Color",
+            "background_color": "Background Color",
+            "accent_color": "Accent Color",
         }

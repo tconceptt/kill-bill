@@ -1,26 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="columns is-centered">
-    <div class="column is-half">
-        <div class="box">
-            <h1 class="title is-4">Settings</h1>
-            <h2 class="subtitle is-6 has-text-grey">Configure automated invoicing</h2>
+<div class="columns">
+    <div class="column">
+        <h1 class="title is-4">Settings</h1>
+        <h2 class="subtitle is-6 has-text-grey">Configure your application and invoices</h2>
 
+        <!-- Tabs -->
+        <div class="tabs is-boxed mb-0">
+            <ul>
+                <li class="{% if active_tab == 'general' %}is-active{% endif %}">
+                    <a href="?tab=general">
+                        <span class="icon is-small"><i>⚙️</i></span>
+                        <span>General Settings</span>
+                    </a>
+                </li>
+                <li class="{% if active_tab == 'invoice' %}is-active{% endif %}">
+                    <a href="?tab=invoice">
+                        <span class="icon is-small"><i>📄</i></span>
+                        <span>Invoice Configuration</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- General Settings Tab -->
+        <div class="box {% if active_tab != 'general' %}is-hidden{% endif %}" id="general-tab">
             <form method="post">
                 {% csrf_token %}
+                <input type="hidden" name="form_type" value="general">
                 
                 <div class="field">
-                    <label class="label">{{ form.invoice_days_before_expiry.label }}</label>
+                    <label class="label">{{ site_form.invoice_days_before_expiry.label }}</label>
                     <div class="control">
-                        {{ form.invoice_days_before_expiry }}
+                        {{ site_form.invoice_days_before_expiry }}
                     </div>
                     <p class="help">
                         Invoices will be generated for all subscriptions expiring within this many days or less.
                         The invoice due date will be set to the subscription expiry date.
                     </p>
-                    {% if form.invoice_days_before_expiry.errors %}
-                    <p class="help is-danger">{{ form.invoice_days_before_expiry.errors.0 }}</p>
+                    {% if site_form.invoice_days_before_expiry.errors %}
+                    <p class="help is-danger">{{ site_form.invoice_days_before_expiry.errors.0 }}</p>
                     {% endif %}
                 </div>
 
@@ -39,20 +59,559 @@
                     </div>
                 </div>
             </form>
+
+            <div class="box mt-4">
+                <h2 class="title is-5">Current Configuration</h2>
+                <table class="table is-fullwidth">
+                    <tbody>
+                        <tr>
+                            <td><strong>Invoice Days Before Expiry</strong></td>
+                            <td>{{ site_config.invoice_days_before_expiry }} days</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="box mt-4">
-            <h2 class="title is-5">Current Configuration</h2>
-            <table class="table is-fullwidth">
-                <tbody>
-                    <tr>
-                        <td><strong>Invoice Days Before Expiry</strong></td>
-                        <td>{{ config.invoice_days_before_expiry }} days</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Invoice Configuration Tab -->
+        <div class="{% if active_tab != 'invoice' %}is-hidden{% endif %}" id="invoice-tab">
+            <div class="columns">
+                <!-- Form Column -->
+                <div class="column is-5">
+                    <form method="post" enctype="multipart/form-data" id="invoice-config-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="invoice">
+
+                        <!-- Company Details Section -->
+                        <div class="box">
+                            <h3 class="title is-6 mb-4">
+                                <span class="icon-text">
+                                    <span>🏢</span>
+                                    <span>Company Details</span>
+                                </span>
+                            </h3>
+                            
+                            <div class="field">
+                                <label class="label is-small">{{ invoice_form.company_name.label }}</label>
+                                <div class="control">
+                                    {{ invoice_form.company_name }}
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label is-small">{{ invoice_form.company_address.label }}</label>
+                                <div class="control">
+                                    {{ invoice_form.company_address }}
+                                </div>
+                            </div>
+
+                            <div class="columns is-mobile">
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.company_phone.label }}</label>
+                                        <div class="control">
+                                            {{ invoice_form.company_phone }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.company_email.label }}</label>
+                                        <div class="control">
+                                            {{ invoice_form.company_email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label is-small">{{ invoice_form.company_tin.label }}</label>
+                                <div class="control">
+                                    {{ invoice_form.company_tin }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Details Section -->
+                        <div class="box">
+                            <h3 class="title is-6 mb-4">
+                                <span class="icon-text">
+                                    <span>🏦</span>
+                                    <span>Bank Details</span>
+                                </span>
+                            </h3>
+                            
+                            <div class="field">
+                                <label class="label is-small">{{ invoice_form.bank_name.label }}</label>
+                                <div class="control">
+                                    {{ invoice_form.bank_name }}
+                                </div>
+                            </div>
+
+                            <div class="columns is-mobile">
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.bank_account_number.label }}</label>
+                                        <div class="control">
+                                            {{ invoice_form.bank_account_number }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.bank_account_name.label }}</label>
+                                        <div class="control">
+                                            {{ invoice_form.bank_account_name }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visual Settings Section -->
+                        <div class="box">
+                            <h3 class="title is-6 mb-4">
+                                <span class="icon-text">
+                                    <span>🎨</span>
+                                    <span>Visual Settings</span>
+                                </span>
+                            </h3>
+                            
+                            <div class="field">
+                                <label class="label is-small">{{ invoice_form.logo.label }}</label>
+                                <div class="file has-name is-fullwidth">
+                                    <label class="file-label">
+                                        {{ invoice_form.logo }}
+                                        <span class="file-cta">
+                                            <span class="file-label">Choose file…</span>
+                                        </span>
+                                        <span class="file-name" id="logo-filename">
+                                            {% if invoice_config.logo %}{{ invoice_config.logo.name }}{% else %}No file selected{% endif %}
+                                        </span>
+                                    </label>
+                                </div>
+                                {% if invoice_config.logo %}
+                                <div class="mt-2">
+                                    <img src="{{ invoice_config.logo.url }}" alt="Current logo" style="max-height: 40px;">
+                                    <span class="tag is-light ml-2">Current logo</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="columns is-mobile">
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.theme.label }}</label>
+                                        <div class="control">
+                                            <div class="select is-fullwidth">
+                                                {{ invoice_form.theme }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.font_family.label }}</label>
+                                        <div class="control">
+                                            <div class="select is-fullwidth">
+                                                {{ invoice_form.font_family }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="columns is-mobile">
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.primary_color.label }}</label>
+                                        <div class="control">
+                                            {{ invoice_form.primary_color }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.secondary_color.label }}</label>
+                                        <div class="control">
+                                            {{ invoice_form.secondary_color }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="columns is-mobile">
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.background_color.label }}</label>
+                                        <div class="control">
+                                            {{ invoice_form.background_color }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field">
+                                        <label class="label is-small">{{ invoice_form.accent_color.label }}</label>
+                                        <div class="control">
+                                            {{ invoice_form.accent_color }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button type="submit" class="button is-primary">Save Invoice Configuration</button>
+                            </div>
+                            <div class="control">
+                                <a href="{% url 'dashboard' %}" class="button is-light">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Preview Column -->
+                <div class="column is-7">
+                    <div class="box" style="position: sticky; top: 1rem;">
+                        <h3 class="title is-6 mb-4">
+                            <span class="icon-text">
+                                
+                                <span>Live Preview</span>
+                            </span>
+                        </h3>
+                        <div id="invoice-preview" class="invoice-preview-container">
+                            <!-- Preview will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
+<style>
+    .color-picker {
+        padding: 0.25rem;
+        height: 2.5rem;
+        cursor: pointer;
+    }
+    
+    .invoice-preview-container {
+        background: #f5f5f5;
+        border-radius: 8px;
+        padding: 1rem;
+        min-height: 600px;
+    }
+    
+    .invoice-preview {
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-radius: 4px;
+        transform: scale(0.7);
+        transform-origin: top left;
+        width: 142.8%;
+    }
+    
+    .invoice-preview-inner {
+        padding: 40px;
+        min-height: 800px;
+    }
+    
+    .invoice-preview header {
+        border-bottom: 2px solid #eee;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    
+    .invoice-preview h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+    }
+    
+    .invoice-preview .company-info {
+        text-align: right;
+        font-size: 12px;
+    }
+    
+    .invoice-preview .section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+    
+    .invoice-preview table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 12px;
+    }
+    
+    .invoice-preview th {
+        padding: 10px 8px;
+        border-bottom: 2px solid #eee;
+        text-align: left;
+        font-weight: 600;
+    }
+    
+    .invoice-preview td {
+        padding: 12px 8px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .invoice-preview .totals {
+        text-align: right;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+    
+    .invoice-preview .payment-info {
+        margin-top: 30px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        font-size: 11px;
+    }
+    
+    .invoice-preview .logo-placeholder {
+        width: 120px;
+        height: 40px;
+        background: #f0f0f0;
+        border: 1px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: #999;
+        border-radius: 4px;
+    }
+    
+    .invoice-preview .logo-img {
+        max-height: 40px;
+        max-width: 150px;
+    }
+    
+    /* Theme: Minimal */
+    .theme-minimal .invoice-preview header {
+        border-bottom-color: #eee;
+    }
+    
+    /* Theme: Classic */
+    .theme-classic .invoice-preview header {
+        border-bottom-width: 3px;
+    }
+    .theme-classic .invoice-preview .section-title {
+        font-weight: 700;
+    }
+    
+    /* Theme: Modern */
+    .theme-modern .invoice-preview header {
+        border-bottom: none;
+        background: linear-gradient(135deg, var(--accent-color) 0%, transparent 100%);
+        margin: -40px -40px 30px -40px;
+        padding: 40px;
+        border-radius: 4px 4px 0 0;
+    }
+    .theme-modern .invoice-preview h1 {
+        color: white;
+    }
+    .theme-modern .invoice-preview .company-info {
+        color: rgba(255,255,255,0.9);
+    }
+
+    .tabs.is-boxed li.is-active a {
+        background-color: white;
+        border-bottom-color: white !important;
+    }
+    
+    .tabs.is-boxed + .box {
+        border-top-left-radius: 0;
+        margin-top: -1px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // File input display
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const fileName = this.files[0]?.name || 'No file selected';
+            document.getElementById('logo-filename').textContent = fileName;
+            updatePreview();
+        });
+    }
+    
+    // Tab switching via URL
+    const tabs = document.querySelectorAll('.tabs li a');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = new URL(this.href);
+            const tabName = url.searchParams.get('tab') || 'general';
+            
+            // Update URL without reload
+            window.history.pushState({}, '', this.href);
+            
+            // Switch tabs
+            document.querySelectorAll('.tabs li').forEach(li => li.classList.remove('is-active'));
+            this.parentElement.classList.add('is-active');
+            
+            document.getElementById('general-tab').classList.toggle('is-hidden', tabName !== 'general');
+            document.getElementById('invoice-tab').classList.toggle('is-hidden', tabName !== 'invoice');
+            
+            if (tabName === 'invoice') {
+                updatePreview();
+            }
+        });
+    });
+    
+    // Live preview updates
+    const formInputs = document.querySelectorAll('#invoice-config-form input, #invoice-config-form select, #invoice-config-form textarea');
+    formInputs.forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+    });
+    
+    // Initial preview render
+    if (document.getElementById('invoice-tab') && !document.getElementById('invoice-tab').classList.contains('is-hidden')) {
+        updatePreview();
+    }
+    
+    function updatePreview() {
+        const companyName = document.querySelector('[name="company_name"]')?.value || 'Your Company Name';
+        const companyAddress = document.querySelector('[name="company_address"]')?.value || 'Your Address';
+        const companyPhone = document.querySelector('[name="company_phone"]')?.value || '';
+        const companyEmail = document.querySelector('[name="company_email"]')?.value || '';
+        const companyTin = document.querySelector('[name="company_tin"]')?.value || '';
+        
+        const bankName = document.querySelector('[name="bank_name"]')?.value || '';
+        const bankAccountNumber = document.querySelector('[name="bank_account_number"]')?.value || '';
+        const bankAccountName = document.querySelector('[name="bank_account_name"]')?.value || '';
+        
+        const theme = document.querySelector('[name="theme"]')?.value || 'minimal';
+        const fontFamily = document.querySelector('[name="font_family"]')?.value || 'Outfit';
+        const primaryColor = document.querySelector('[name="primary_color"]')?.value || '#1a1a1a';
+        const secondaryColor = document.querySelector('[name="secondary_color"]')?.value || '#666666';
+        const backgroundColor = document.querySelector('[name="background_color"]')?.value || '#ffffff';
+        const accentColor = document.querySelector('[name="accent_color"]')?.value || '#4a90d9';
+        
+        // Check for logo
+        let logoHtml = '<div class="logo-placeholder">No Logo</div>';
+        const existingLogo = document.querySelector('.invoice-preview-container img[alt="Current logo"]');
+        const fileInput = document.querySelector('input[type="file"]');
+        
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.querySelector('.invoice-preview .logo-container').innerHTML = 
+                    `<img src="${e.target.result}" class="logo-img" alt="Logo">`;
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        } else if (existingLogo) {
+            {% if invoice_config.logo %}
+            logoHtml = `<img src="{{ invoice_config.logo.url }}" class="logo-img" alt="Logo">`;
+            {% endif %}
+        }
+        
+        const addressLines = companyAddress.split('\n').join('<br>');
+        
+        let bankInfo = '';
+        if (bankName || bankAccountNumber || bankAccountName) {
+            bankInfo = `
+                <p><strong>Bank Details:</strong></p>
+                <p>
+                    ${bankName ? `Bank: ${bankName}<br>` : ''}
+                    ${bankAccountNumber ? `Account: ${bankAccountNumber}<br>` : ''}
+                    ${bankAccountName ? `Name: ${bankAccountName}` : ''}
+                </p>
+            `;
+        }
+        
+        let tinDisplay = companyTin ? `<br>TIN: ${companyTin}` : '';
+        
+        const previewHtml = `
+            <div class="invoice-preview theme-${theme}" style="--accent-color: ${accentColor};">
+                <div class="invoice-preview-inner" style="background-color: ${backgroundColor}; font-family: '${fontFamily}', sans-serif; color: ${primaryColor};">
+                    <header>
+                        <div>
+                            <div class="logo-container">${logoHtml}</div>
+                            <h1 style="margin-top: 10px;">Invoice INV-0001</h1>
+                        </div>
+                        <div class="company-info" style="color: ${secondaryColor};">
+                            <strong style="color: ${primaryColor};">${companyName}</strong><br>
+                            ${addressLines}${tinDisplay}
+                            ${companyPhone ? `<br>${companyPhone}` : ''}
+                            ${companyEmail ? `<br>${companyEmail}` : ''}
+                        </div>
+                    </header>
+
+                    <div style="display: flex; justify-content: space-between;">
+                        <section style="flex: 1;">
+                            <h2 class="section-title" style="color: ${secondaryColor};">Bill To</h2>
+                            <p>
+                                <strong>Sample Client Ltd.</strong><br>
+                                John Doe<br>
+                                client@example.com<br>
+                                +251 912 345 678
+                            </p>
+                        </section>
+
+                        <section style="text-align: right; flex: 1;">
+                            <p style="color: ${secondaryColor};">
+                                <strong style="color: ${primaryColor};">Issue Date:</strong> Nov 26, 2025<br>
+                                <strong style="color: ${primaryColor};">Due Date:</strong> Dec 10, 2025<br>
+                                <strong style="color: ${primaryColor};">Status:</strong> <span style="color: ${accentColor};">Unpaid</span>
+                            </p>
+                        </section>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="color: ${secondaryColor}; border-color: ${secondaryColor}30;">Description</th>
+                                <th style="color: ${secondaryColor}; border-color: ${secondaryColor}30;">Billing Cycle</th>
+                                <th style="text-align: right; color: ${secondaryColor}; border-color: ${secondaryColor}30;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border-color: ${secondaryColor}20;">Premium Plan subscription</td>
+                                <td style="border-color: ${secondaryColor}20;">Monthly</td>
+                                <td style="text-align: right; border-color: ${secondaryColor}20;">ETB 5,000.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="totals">
+                        <p><strong>Total Due:</strong> <span style="color: ${accentColor};">ETB 5,000.00</span></p>
+                    </div>
+
+                    <section class="payment-info" style="color: ${secondaryColor}; border-color: ${secondaryColor}30;">
+                        <p><strong style="color: ${primaryColor};">Payment Instructions:</strong> Please settle the invoice within the due date via bank transfer. Include the invoice number in the payment reference.</p>
+                        ${bankInfo}
+                    </section>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('invoice-preview').innerHTML = previewHtml;
+        
+        // Load Google Font for preview
+        const existingFontLink = document.getElementById('preview-font');
+        if (existingFontLink) {
+            existingFontLink.remove();
+        }
+        const fontLink = document.createElement('link');
+        fontLink.id = 'preview-font';
+        fontLink.rel = 'stylesheet';
+        fontLink.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(' ', '+')}:wght@300;400;500;600;700&display=swap`;
+        document.head.appendChild(fontLink);
+    }
+});
+</script>
+{% endblock %}

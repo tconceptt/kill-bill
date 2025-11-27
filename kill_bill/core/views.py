@@ -6,11 +6,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.db import models
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
-from .forms import ClientForm, InvoiceForm, PaymentForm, SiteConfigurationForm, SubscriptionForm, SubscriptionPlanForm
-from .models import Client, Invoice, Payment, SiteConfiguration, Subscription, SubscriptionPlan, get_reminder_invoices
+from .forms import ClientForm, InvoiceConfigurationForm, InvoiceForm, PaymentForm, SiteConfigurationForm, SubscriptionForm, SubscriptionPlanForm
+from .models import Client, Invoice, InvoiceConfiguration, Payment, SiteConfiguration, Subscription, SubscriptionPlan, get_reminder_invoices
 
 
 class AdminLoginView(LoginView):
@@ -257,7 +259,11 @@ def invoice_print(request, pk):
     invoice = get_object_or_404(
         Invoice.objects.select_related("subscription__client", "subscription__plan"), pk=pk
     )
-    return render(request, "invoices/print.html", {"invoice": invoice})
+    invoice_config = InvoiceConfiguration.get_config()
+    return render(request, "invoices/print.html", {
+        "invoice": invoice,
+        "config": invoice_config,
+    })
 
 
 @login_required
@@ -362,29 +368,56 @@ def email_log_list(request):
 def settings_view(request):
     from .utils import process_expiring_subscriptions
 
-    config = SiteConfiguration.get_config()
+    site_config = SiteConfiguration.get_config()
+    invoice_config = InvoiceConfiguration.get_config()
     results = None
+    active_tab = request.GET.get("tab", "general")
 
     if request.method == "POST":
-        form = SiteConfigurationForm(request.POST, instance=config)
-        if form.is_valid():
-            config = form.save()
+        form_type = request.POST.get("form_type", "general")
+        
+        if form_type == "general":
+            site_form = SiteConfigurationForm(request.POST, instance=site_config)
+            invoice_form = InvoiceConfigurationForm(instance=invoice_config)
             
-            # Process expiring subscriptions with the new config
-            results = process_expiring_subscriptions(config.invoice_days_before_expiry)
+            if site_form.is_valid():
+                site_config = site_form.save()
+                
+                # Process expiring subscriptions with the new config
+                results = process_expiring_subscriptions(site_config.invoice_days_before_expiry)
+                
+                if results["invoices_created"] > 0:
+                    messages.success(
+                        request,
+                        f"Settings updated. Created {results['invoices_created']} invoice(s) "
+                        f"and sent {results['emails_sent']} email(s) for subscriptions "
+                        f"expiring within {site_config.invoice_days_before_expiry} days."
+                    )
+                else:
+                    messages.success(request, "General settings updated successfully")
+                
+                return redirect("settings")
+        else:
+            site_form = SiteConfigurationForm(instance=site_config)
+            invoice_form = InvoiceConfigurationForm(
+                request.POST, request.FILES, instance=invoice_config
+            )
             
-            if results["invoices_created"] > 0:
-                messages.success(
-                    request,
-                    f"Settings updated. Created {results['invoices_created']} invoice(s) "
-                    f"and sent {results['emails_sent']} email(s) for subscriptions "
-                    f"expiring within {config.invoice_days_before_expiry} days."
-                )
+            if invoice_form.is_valid():
+                invoice_form.save()
+                messages.success(request, "Invoice configuration saved successfully")
+                return HttpResponseRedirect(reverse("settings") + "?tab=invoice")
             else:
-                messages.success(request, "Settings updated successfully")
-            
-            return redirect("settings")
+                active_tab = "invoice"
     else:
-        form = SiteConfigurationForm(instance=config)
+        site_form = SiteConfigurationForm(instance=site_config)
+        invoice_form = InvoiceConfigurationForm(instance=invoice_config)
     
-    return render(request, "settings.html", {"form": form, "config": config, "results": results})
+    return render(request, "settings.html", {
+        "site_form": site_form,
+        "invoice_form": invoice_form,
+        "site_config": site_config,
+        "invoice_config": invoice_config,
+        "results": results,
+        "active_tab": active_tab,
+    })

@@ -238,3 +238,133 @@ class SiteConfiguration(models.Model):
     def get_config(cls) -> "SiteConfiguration":
         config, _ = cls.objects.get_or_create(pk=1)
         return config
+
+
+class InvoiceConfiguration(models.Model):
+    """Singleton model for invoice customization settings."""
+
+    class FontFamily(models.TextChoices):
+        OUTFIT = "Outfit", "Outfit"
+        INTER = "Inter", "Inter"
+        ROBOTO = "Roboto", "Roboto"
+        POPPINS = "Poppins", "Poppins"
+        LATO = "Lato", "Lato"
+        OPEN_SANS = "Open Sans", "Open Sans"
+        PLAYFAIR = "Playfair Display", "Playfair Display"
+        MERRIWEATHER = "Merriweather", "Merriweather"
+
+    class Theme(models.TextChoices):
+        MINIMAL = "minimal", "Minimal"
+        CLASSIC = "classic", "Classic"
+        MODERN = "modern", "Modern"
+
+    # Company Details
+    company_name = models.CharField(
+        max_length=255,
+        default="Your Company Name",
+        help_text="Business name displayed on invoice"
+    )
+    company_address = models.TextField(
+        default="Your Address",
+        help_text="Full company address"
+    )
+    company_phone = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="Contact phone number"
+    )
+    company_email = models.EmailField(
+        blank=True,
+        default="",
+        help_text="Contact email address"
+    )
+    company_tin = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="TIN",
+        help_text="Tax Identification Number"
+    )
+
+    # Bank Details
+    bank_name = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Bank name for payment settlement"
+    )
+    bank_account_number = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="Bank account number"
+    )
+    bank_account_name = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Account holder name"
+    )
+
+    # Visual Settings
+    logo = models.ImageField(
+        upload_to="invoice_logos/",
+        blank=True,
+        null=True,
+        help_text="Company logo (recommended: 200x80px)"
+    )
+    theme = models.CharField(
+        max_length=20,
+        choices=Theme.choices,
+        default=Theme.MINIMAL,
+        help_text="Invoice theme style"
+    )
+    font_family = models.CharField(
+        max_length=50,
+        choices=FontFamily.choices,
+        default=FontFamily.OUTFIT,
+        help_text="Font used in invoice"
+    )
+    primary_color = models.CharField(
+        max_length=7,
+        default="#1a1a1a",
+        help_text="Primary color for headers and accents (hex)"
+    )
+    secondary_color = models.CharField(
+        max_length=7,
+        default="#666666",
+        help_text="Secondary color for labels and borders (hex)"
+    )
+    background_color = models.CharField(
+        max_length=7,
+        default="#ffffff",
+        help_text="Background color (hex)"
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        default="#4a90d9",
+        help_text="Accent color for highlights (hex)"
+    )
+
+    class Meta:
+        verbose_name = "Invoice Configuration"
+        verbose_name_plural = "Invoice Configuration"
+
+    def __str__(self) -> str:
+        return "Invoice Configuration"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one configuration instance exists (singleton pattern)
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_config(cls) -> "InvoiceConfiguration":
+        config, _ = cls.objects.get_or_create(pk=1)
+        return config
+
+    def get_font_url(self) -> str:
+        """Return Google Fonts URL for the selected font."""
+        font_name = self.font_family.replace(" ", "+")
+        return f"https://fonts.googleapis.com/css2?family={font_name}:wght@300;400;500;600;700&display=swap"

@@ -4,20 +4,34 @@
 <head>
     <meta charset="utf-8">
     <title>{{ invoice.invoice_number }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ config.get_font_url }}" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: {{ config.primary_color|default:"#1a1a1a" }};
+            --secondary-color: {{ config.secondary_color|default:"#666666" }};
+            --background-color: {{ config.background_color|default:"#ffffff" }};
+            --accent-color: {{ config.accent_color|default:"#4a90d9" }};
+        }
+        
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: '{{ config.font_family|default:"Outfit" }}', sans-serif;
             margin: 0;
             padding: 40px;
-            color: #1a1a1a;
+            background-color: var(--background-color);
+            color: var(--primary-color);
             line-height: 1.5;
         }
 
         header {
-            border-bottom: 2px solid #eee;
+            {% if config.theme == 'modern' %}
+            background: linear-gradient(135deg, var(--accent-color) 0%, transparent 100%);
+            margin: -40px -40px 40px -40px;
+            padding: 40px;
+            {% else %}
+            border-bottom: {% if config.theme == 'classic' %}3px{% else %}2px{% endif %} solid #eee;
             margin-bottom: 40px;
             padding-bottom: 20px;
+            {% endif %}
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -27,20 +41,36 @@
             margin: 0;
             font-size: 24px;
             font-weight: 700;
+            {% if config.theme == 'modern' %}
+            color: white;
+            {% endif %}
         }
 
         h2 {
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #666;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            {% if config.theme == 'classic' %}
+            font-weight: 700;
+            {% endif %}
+        }
+
+        .logo {
+            max-height: 60px;
+            max-width: 200px;
             margin-bottom: 10px;
         }
 
         .company-info {
             text-align: right;
             font-size: 14px;
-            color: #666;
+            color: {% if config.theme == 'modern' %}rgba(255,255,255,0.9){% else %}var(--secondary-color){% endif %};
+        }
+        
+        .company-info strong {
+            color: {% if config.theme == 'modern' %}white{% else %}var(--primary-color){% endif %};
         }
 
         .invoice-details,
@@ -65,7 +95,7 @@
             text-align: left;
             font-weight: 600;
             font-size: 14px;
-            color: #666;
+            color: var(--secondary-color);
         }
 
         td {
@@ -78,18 +108,76 @@
             margin-top: 40px;
             font-size: 18px;
         }
+        
+        .totals .amount {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
 
         .payment-info {
             margin-top: 60px;
             padding-top: 20px;
             border-top: 1px solid #eee;
             font-size: 14px;
-            color: #666;
+            color: var(--secondary-color);
+        }
+        
+        .payment-info strong {
+            color: var(--primary-color);
+        }
+        
+        .bank-details {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .bank-details p {
+            margin: 0 0 5px 0;
+        }
+        
+        .tin-number {
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-unpaid {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-overdue {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         @media print {
             body {
                 padding: 0;
+            }
+            
+            header {
+                {% if config.theme == 'modern' %}
+                margin: 0 0 40px 0;
+                padding: 20px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                {% endif %}
             }
         }
     </style>
@@ -98,12 +186,23 @@
 <body>
     <header>
         <div>
+            {% if config.logo %}
+            <img src="{{ config.logo.url }}" alt="{{ config.company_name }}" class="logo">
+            {% endif %}
             <h1>Invoice {{ invoice.invoice_number }}</h1>
         </div>
         <div class="company-info">
-            <strong>Subscription Manager</strong><br>
-            Ethiopia, Addis Ababa<br>
-            support@example.com
+            <strong>{{ config.company_name|default:"Subscription Manager" }}</strong><br>
+            {{ config.company_address|default:"Ethiopia, Addis Ababa"|linebreaksbr }}
+            {% if config.company_tin %}
+            <br><span class="tin-number">TIN: {{ config.company_tin }}</span>
+            {% endif %}
+            {% if config.company_phone %}
+            <br>{{ config.company_phone }}
+            {% endif %}
+            {% if config.company_email %}
+            <br>{{ config.company_email }}
+            {% endif %}
         </div>
     </header>
 
@@ -122,7 +221,10 @@
             <p>
                 <strong>Issue Date:</strong> {{ invoice.issue_date }}<br>
                 <strong>Due Date:</strong> {{ invoice.due_date }}<br>
-                <strong>Status:</strong> {{ invoice.get_status_display }}
+                <strong>Status:</strong> 
+                <span class="status-badge status-{{ invoice.status }}">
+                    {{ invoice.get_status_display }}
+                </span>
             </p>
         </section>
     </div>
@@ -145,12 +247,27 @@
     </table>
 
     <div class="totals">
-        <p><strong>Total Due:</strong> {{ invoice.amount }}</p>
+        <p><strong>Total Due:</strong> <span class="amount">{{ invoice.amount }}</span></p>
     </div>
 
     <section class="payment-info">
         <p><strong>Payment Instructions:</strong> Please settle the invoice within the due date via bank transfer or
             cheque. Include the invoice number in the payment reference.</p>
+        
+        {% if config.bank_name or config.bank_account_number or config.bank_account_name %}
+        <div class="bank-details">
+            <p><strong>Bank Details:</strong></p>
+            {% if config.bank_name %}
+            <p>Bank: {{ config.bank_name }}</p>
+            {% endif %}
+            {% if config.bank_account_number %}
+            <p>Account Number: {{ config.bank_account_number }}</p>
+            {% endif %}
+            {% if config.bank_account_name %}
+            <p>Account Name: {{ config.bank_account_name }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
     </section>
 </body>
 
